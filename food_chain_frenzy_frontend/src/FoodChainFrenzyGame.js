@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
+import RecipeCardPopup from "./RecipeCardPopup";
 
 /**
  * PUBLIC_INTERFACE
@@ -88,6 +89,22 @@ export default function FoodChainFrenzyGame() {
   const [dragged, setDragged] = useState(null);
   const conveyorRef = useRef();
 
+  // --- Pop-up Recipe Card Guidance State ---
+  // Show each unique recipe in first few rounds as pop-up when needed
+  // Store (by recipe name) which popups have been seen
+  const [recipeGuideSeen, setRecipeGuideSeen] = useState({});
+  const [showRecipePopup, setShowRecipePopup] = useState(false);
+  const [currentPopupRecipe, setCurrentPopupRecipe] = useState(null);
+  const [roundNumber, setRoundNumber] = useState(0);
+
+  // Helper: find first un-seen recipe among current orders (or null)
+  const getNextRecipeToShow = (ordersList) => {
+    for (const o of ordersList) {
+      if (!recipeGuideSeen[o.name]) return o;
+    }
+    return null;
+  };
+
   /** Periodically animate conveyor, add new ingredient */
   useEffect(() => {
     if (gameOver) return;
@@ -127,6 +144,8 @@ export default function FoodChainFrenzyGame() {
         }
         return newOrders;
       });
+      // Advance round number if new unique recipe is encountered
+      setRoundNumber((prev) => prev + 1);
     }, 700);
     return () => clearInterval(interval);
   }, [gameOver]);
@@ -135,6 +154,21 @@ export default function FoodChainFrenzyGame() {
   useEffect(() => {
     if (rage > 4 && !gameOver) setGameOver(true);
   }, [rage, gameOver]);
+
+  /** Show recipe popups for each unique recipe as needed (first 3 rounds w/ new recipes) */
+  useEffect(() => {
+    if (gameOver) return;
+    // Only guide in first 3 round cycles or until all recipes seen (show max 1 at a time)
+    if (roundNumber < 7 && orders.length > 0 && !showRecipePopup) {
+      const recipeToShow = getNextRecipeToShow(orders);
+      if (recipeToShow && !recipeGuideSeen[recipeToShow.name]) {
+        // Pause action and show recipe popup
+        setShowRecipePopup(true);
+        setCurrentPopupRecipe(recipeToShow);
+      }
+    }
+    // eslint-disable-next-line
+  }, [orders, roundNumber, showRecipePopup, gameOver]);
 
   /** Reset area when restarting */
   function handleRestart() {
@@ -179,6 +213,8 @@ export default function FoodChainFrenzyGame() {
       setCombo(c => c + 1);
       setOrders(orders => orders.slice(1)); // pop this order
       setPlate([]);
+      // Mark that the player has now seen this recipe (if popup shown, handled there)
+      setRecipeGuideSeen(seen => ({ ...seen, [curOrder.name]: true }));
     } else {
       // Failed: rage, reset combo
       setRage(r => r + 1);
@@ -387,74 +423,91 @@ export default function FoodChainFrenzyGame() {
     );
   }
 
-  return (
-    <div style={{
-      margin: "auto",
-      marginTop: 42,
-      marginBottom: 10,
-      maxWidth: 480,
-      background: "#ffe7e7",
-      borderRadius: 22,
-      boxShadow: "0 8px 30px #fd91a111",
-      padding: "16px 16px 40px 16px",
-      border: "4px solid #fd91a1",
-      minHeight: 460,
-      position: "relative"
-    }}>
-      <div style={{
-        fontFamily: "Comic Sans MS, Quicksand, Arial",
-        fontWeight: "bold",
-        fontSize: "2.0em",
-        letterSpacing: "2px",
-        color: "#921635",
-        background: "#fff3",
-        marginBottom: 8
-      }}>
-        🍳 Food Chain Frenzy
-      </div>
-      {renderTopBar()}
-      {renderOrders()}
-      {renderConveyor()}
-      <div style={{ marginTop: 8, marginBottom: 6, color: "#333" }}>
-        <b>Build:</b> Drag/click ingredient onto your plate, then tap "Serve"!
-      </div>
-      {renderPlate()}
-      <button
-        className="theme-toggle"
-        style={{
-          marginTop: 10,
-          marginBottom: 10,
-          fontSize: "1.24em",
-          fontWeight: "bold",
-          background: "#921635"
-        }}
-        onClick={handleServe}
-        disabled={gameOver || plate.length === 0}
-      >Serve!</button>
+  // Handler to dismiss the recipe popup and record recipe as seen
+  function handleDismissRecipePopup() {
+    if (currentPopupRecipe) {
+      setRecipeGuideSeen(seen => ({ ...seen, [currentPopupRecipe.name]: true }));
+    }
+    setShowRecipePopup(false);
+    setCurrentPopupRecipe(null);
+  }
 
-      {/* Game Over */}
-      {gameOver &&
+  return (
+    <>
+      {/* On top of main game UI: recipe guide popup */}
+      <RecipeCardPopup
+        recipe={currentPopupRecipe}
+        visible={showRecipePopup}
+        onDismiss={handleDismissRecipePopup}
+      />
+      <div style={{
+        margin: "auto",
+        marginTop: 42,
+        marginBottom: 10,
+        maxWidth: 480,
+        background: "#ffe7e7",
+        borderRadius: 22,
+        boxShadow: "0 8px 30px #fd91a111",
+        padding: "16px 16px 40px 16px",
+        border: "4px solid #fd91a1",
+        minHeight: 460,
+        position: "relative"
+      }}>
         <div style={{
-          background: "#921635dd",
-          color: "#fff",
+          fontFamily: "Comic Sans MS, Quicksand, Arial",
           fontWeight: "bold",
-          position: "absolute",
-          top: 56,
-          left: 0,
-          width: "100%",
-          fontSize: "1.7em",
-          padding: "20px 0",
-          borderRadius: "12px"
+          fontSize: "2.0em",
+          letterSpacing: "2px",
+          color: "#921635",
+          background: "#fff3",
+          marginBottom: 8
         }}>
-          Game Over!<br />
-          Final Score: {score}<br />
-          <button
-            className="theme-toggle"
-            style={{ marginTop: 16, fontSize: "1.1em", fontWeight: "bold", background: "#fff", color: "#fa459a", border: "2px solid #fd91a1" }}
-            onClick={handleRestart}
-          >Restart Game</button>
+          🍳 Food Chain Frenzy
         </div>
-      }
-    </div>
+        {renderTopBar()}
+        {renderOrders()}
+        {renderConveyor()}
+        <div style={{ marginTop: 8, marginBottom: 6, color: "#333" }}>
+          <b>Build:</b> Drag/click ingredient onto your plate, then tap "Serve"!
+        </div>
+        {renderPlate()}
+        <button
+          className="theme-toggle"
+          style={{
+            marginTop: 10,
+            marginBottom: 10,
+            fontSize: "1.24em",
+            fontWeight: "bold",
+            background: "#921635"
+          }}
+          onClick={handleServe}
+          disabled={gameOver || plate.length === 0}
+        >Serve!</button>
+
+        {/* Game Over */}
+        {gameOver &&
+          <div style={{
+            background: "#921635dd",
+            color: "#fff",
+            fontWeight: "bold",
+            position: "absolute",
+            top: 56,
+            left: 0,
+            width: "100%",
+            fontSize: "1.7em",
+            padding: "20px 0",
+            borderRadius: "12px"
+          }}>
+            Game Over!<br />
+            Final Score: {score}<br />
+            <button
+              className="theme-toggle"
+              style={{ marginTop: 16, fontSize: "1.1em", fontWeight: "bold", background: "#fff", color: "#fa459a", border: "2px solid #fd91a1" }}
+              onClick={handleRestart}
+            >Restart Game</button>
+          </div>
+        }
+      </div>
+    </>
   );
 }
