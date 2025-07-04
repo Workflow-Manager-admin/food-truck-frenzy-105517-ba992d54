@@ -122,6 +122,21 @@
   }
 }
 
+/* Customer avatar mood animations */
+@keyframes customer-shake {
+  0% { transform: rotate(-7deg) scale(1.13); }
+  25% { transform: rotate(2deg) scale(1.18); }
+  70% { transform: rotate(-2deg) scale(1.16);}
+  100% { transform: rotate(7deg) scale(1.11);}
+}
+
+@keyframes customer-bounce {
+  0% { transform: translateY(0); }
+  27% { transform: translateY(-4.5px) scale(1.01);}
+  60% { transform: translateY(-2.5px) scale(1.0);}
+  100% { transform: translateY(0);}
+}
+
 /* Responsive design for mobile */
 @media (max-width: 768px) {
   .theme-toggle {

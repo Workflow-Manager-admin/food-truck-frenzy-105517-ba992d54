@@ -63,15 +63,46 @@ function getIngredientEmoji(name) {
   }
 }
 
-/** Very cartoonish customer face */
-function CustomerFace({ angry }) {
+/** 
+ * Animated/expressive cartoon customer avatar face.
+ * Will change facial expression based on mood state: happy, impatient, furious.
+ * Optionally, animates (e.g. shaking, pulsing) if furious.
+ *
+ * @param {string} mood - one of 'happy', 'impatient', 'furious'
+ * @param {boolean} animate - if avatar should animate due to frustration
+ */
+function CustomerFace({ mood, animate }) {
+  const emoji =
+    mood === "furious"
+      ? "😡"
+      : mood === "impatient"
+      ? "😠"
+      : "😃";
+  // Simple animation styles
+  const animation =
+    mood === "furious"
+      ? "customer-shake 0.22s infinite alternate"
+      : mood === "impatient"
+      ? "customer-bounce 1.3s infinite alternate"
+      : undefined;
+  const filter =
+    mood === "furious"
+      ? "hue-rotate(-48deg) saturate(170%) brightness(1.05)"
+      : mood === "impatient"
+      ? "hue-rotate(-10deg) saturate(115%)"
+      : undefined;
   return (
-    <span style={{
-      fontSize: "2.2em",
-      filter: angry ? "hue-rotate(-48deg) saturate(160%)" : undefined,
-      transition: "filter 0.4s"
-    }}>
-      {angry ? "😡" : "😃"}
+    <span
+      style={{
+        display: "inline-block",
+        fontSize: "2.2em",
+        filter,
+        animation,
+        transition: "filter 0.5s, transform 0.3s"
+      }}
+      aria-label={`customer-${mood}`}
+    >
+      {emoji}
     </span>
   );
 }
@@ -373,24 +404,57 @@ export default function FoodChainFrenzyGame() {
     );
   }
 
-  /** UI: Orders/timers/customers */
+  /** UI: Orders/timers/customers with expressive avatars. */
   function renderOrders() {
     return (
       <div style={{ display: "flex", gap: 30, justifyContent: "center", margin: "12px 0 14px 0" }}>
         {orders.map((order, idx) => {
-          const left = Math.max(0, (order.duration - (Date.now() - order.startTime)) / order.duration);
+          const now = Date.now();
+          const waited = now - order.startTime;
+          const left = Math.max(0, (order.duration - waited) / order.duration);
+
+          // Customer mood states:
+          // - happy: > 55% time left
+          // - impatient: between 15 and 55%
+          // - furious: < 15%
+          let mood = "happy";
+          if (left < 0.15) {
+            mood = "furious";
+          } else if (left < 0.55) {
+            mood = "impatient";
+          }
+
+          // Animate only furious and impatient (furious shakes)
+          const animate = mood !== "happy";
+
+          // Color background by customer mood
+          let bgColor = "#fff5fa";
+          let borderColor = "#fd91a1";
+          let boxShadow = "0 2px 8px #fea2";
+          if (mood === "impatient") {
+            bgColor = "#fff2bb";
+            borderColor = "#fda941";
+            boxShadow = "0 2px 9px #fdde4788";
+          } else if (mood === "furious") {
+            bgColor = "#ffe0e2";
+            borderColor = "#fd5757";
+            boxShadow = "0 0 18px #fd5757cc";
+          }
+
           return (
             <div
               key={order.id}
               style={{
-                background: "#fff5fa",
-                border: "2px solid #fd91a1",
+                background: bgColor,
+                border: `2.2px solid ${borderColor}`,
                 minWidth: 96,
                 padding: "6px 16px 8px 16px",
                 borderRadius: 12,
-                boxShadow: "0 2px 8px #fea2",
-                position: "relative"
+                boxShadow: boxShadow,
+                position: "relative",
+                transition: "background 0.3s, border 0.3s, box-shadow 0.3s"
               }}
+              aria-label={`Customer order: ${order.name}, mood: ${mood}`}
             >
               <div
                 style={{
@@ -425,8 +489,9 @@ export default function FoodChainFrenzyGame() {
                 <div style={{
                   width: `${Math.floor(left * 100)}%`,
                   height: "100%",
-                  background: "#fd91a1",
+                  background: mood === "furious" ? "#fd5757" : "#fd91a1",
                   borderRadius: 7,
+                  boxShadow: mood === "furious" ? "0 0 8px #fd5757bb" : undefined,
                   transition: "width 0.3s"
                 }} />
               </div>
@@ -434,9 +499,9 @@ export default function FoodChainFrenzyGame() {
                 position: "absolute",
                 right: 8,
                 top: 5,
-                fontSize: "1.6em"
+                fontSize: "1.65em"
               }}>
-                <CustomerFace angry={left < 0.15} />
+                <CustomerFace mood={mood} animate={animate} />
               </div>
             </div>
           );

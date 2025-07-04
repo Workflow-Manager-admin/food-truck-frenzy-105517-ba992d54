@@ -6,9 +6,9 @@ Attempting to bind to HOST environment variable: 0.0.0.0
 If this was unintentional, check that you haven't mistakenly set it in your shell.
 Learn more here: https://cra.link/advanced-config
 
-(node:4111) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:5042) [DEP_WEBPACK_DEV_SERVER_ON_AFTER_SETUP_MIDDLEWARE] DeprecationWarning: 'onAfterSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-(node:4111) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
+(node:5042) [DEP_WEBPACK_DEV_SERVER_ON_BEFORE_SETUP_MIDDLEWARE] DeprecationWarning: 'onBeforeSetupMiddleware' option is deprecated. Please use the 'setupMiddlewares' option.
 Starting the development server...
 
 Compiled successfully!
@@ -23,31 +23,18 @@ To create a production build, use npm run build.
 
 webpack compiled successfully
 Compiling...
-Compiled successfully!
-webpack compiled successfully
-Compiling...
 Compiled with warnings.
 
 [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 97:10:  'fireModeActive' is assigned a value but never used       no-unused-vars
-  Line 97:26:  'setFireModeActive' is assigned a value but never used    no-unused-vars
-  Line 98:10:  'fireModeTimeLeft' is assigned a value but never used     no-unused-vars
-  Line 98:28:  'setFireModeTimeLeft' is assigned a value but never used  no-unused-vars
-  Line 99:9:   'fireModeTimerId' is assigned a value but never used      no-unused-vars
-  Line 100:9:  'fireModeSoundRef' is assigned a value but never used     no-unused-vars
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 Search for the keywords to learn more about each warning.
 To ignore, add // eslint-disable-next-line to the line before.
 
 WARNING in [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 97:10:  'fireModeActive' is assigned a value but never used       no-unused-vars
-  Line 97:26:  'setFireModeActive' is assigned a value but never used    no-unused-vars
-  Line 98:10:  'fireModeTimeLeft' is assigned a value but never used     no-unused-vars
-  Line 98:28:  'setFireModeTimeLeft' is assigned a value but never used  no-unused-vars
-  Line 99:9:   'fireModeTimerId' is assigned a value but never used      no-unused-vars
-  Line 100:9:  'fireModeSoundRef' is assigned a value but never used     no-unused-vars
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 webpack compiled with 1 warning
 Compiling...
@@ -55,14 +42,14 @@ Compiled with warnings.
 
 [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 Search for the keywords to learn more about each warning.
 To ignore, add // eslint-disable-next-line to the line before.
 
 WARNING in [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 webpack compiled with 1 warning
 Compiling...
@@ -70,58 +57,13 @@ Compiled with warnings.
 
 [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 Search for the keywords to learn more about each warning.
 To ignore, add // eslint-disable-next-line to the line before.
 
 WARNING in [eslint] 
 src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-webpack compiled with 1 warning
-Compiling...
-Compiled with warnings.
-
-[eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
-
-Search for the keywords to learn more about each warning.
-To ignore, add // eslint-disable-next-line to the line before.
-
-WARNING in [eslint] 
-src/FoodChainFrenzyGame.js
-  Line 141:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  Line 172:26:  The ref value 'fireModeSoundRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'fireModeSoundRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
 webpack compiled with 1 warning
