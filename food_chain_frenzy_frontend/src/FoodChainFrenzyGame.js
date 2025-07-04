@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import RecipeCardPopup from "./RecipeCardPopup";
+import Leaderboard from "./Leaderboard";
 // For fire mode sound (small, one-off use)
 // For illustration, we will add a playable audio element. Replace with asset path if needed.
 
@@ -106,7 +107,6 @@ function CustomerFace({ mood, animate }) {
     </span>
   );
 }
-
 export default function FoodChainFrenzyGame() {
   // Conveyor state: ingredients that move across, each with id, type, position
   const [conveyor, setConveyor] = useState([]);
@@ -122,6 +122,9 @@ export default function FoodChainFrenzyGame() {
   // ingredient being dragged
   const [dragged, setDragged] = useState(null);
   const conveyorRef = useRef();
+
+  // Leaderboard modal visibility
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
 
   // --- Mini Fire Mode State ---
   // When active, doubles speed/multiplier and adds effects.
@@ -577,6 +580,37 @@ export default function FoodChainFrenzyGame() {
         preload="auto"
         style={{ display: "none" }}
       />
+      {/* Modal-style floating leaderboard */}
+      {leaderboardOpen && (
+        <div
+          style={{
+            position: "fixed",
+            zIndex: 3999,
+            left: 0,
+            top: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(32,16,28,0.35)"
+          }}
+          tabIndex={-1}
+          aria-modal="true"
+          onClick={() => setLeaderboardOpen(false)}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "49%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 4001
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <Leaderboard onClose={() => setLeaderboardOpen(false)} />
+          </div>
+        </div>
+      )}
+
       <div style={{
         margin: "auto",
         marginTop: 42,
@@ -636,6 +670,27 @@ export default function FoodChainFrenzyGame() {
           marginBottom: 8
         }}>
           🍳 Food Chain Frenzy
+        </div>
+        {/* Leaderboard entry button */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 13 }}>
+          <button
+            className="theme-toggle"
+            onClick={() => setLeaderboardOpen(true)}
+            style={{
+              fontWeight: "bold",
+              fontSize: "1.1em",
+              background: "#fd91a1",
+              color: "#fff",
+              border: "2px solid #fd91a1",
+              borderRadius: "9px",
+              margin: "0 1px",
+              padding: "7.5px 30px",
+              boxShadow: "0 1px 6px #fea3",
+              transition: "background 0.16s, color 0.16s",
+              letterSpacing: "0.5px"
+            }}
+            aria-label="View leaderboard"
+          >🏆 View Leaderboard</button>
         </div>
         {renderTopBar()}
         {renderOrders()}
