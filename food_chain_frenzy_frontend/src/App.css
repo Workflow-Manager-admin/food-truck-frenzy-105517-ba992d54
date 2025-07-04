@@ -131,3 +131,11 @@
     font-size: 12px;
   }
 }
+
+/* Fire Mode */
+@keyframes fire-bg-glow {
+  0%   { box-shadow: 0 8px 54px 1.5px #fdad4187, 0 0 77px #fd915b1A; }
+  30%  { box-shadow: 0 8px 84px 8px #ffe466d1, 0 0 110px #fd915b57; }
+  60%  { box-shadow: 0 8px 44px 1.5px #fdad4187, 0 0 70px #fd915b67; }
+  100% { box-shadow: 0 8px 54px 1.5px #fdad4187, 0 0 77px #fd915b1A; }
+}

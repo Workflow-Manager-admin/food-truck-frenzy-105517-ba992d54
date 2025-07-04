@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import RecipeCardPopup from "./RecipeCardPopup";
+// For fire mode sound (small, one-off use)
+// For illustration, we will add a playable audio element. Replace with asset path if needed.
+
 
 /**
  * PUBLIC_INTERFACE
@@ -89,6 +92,13 @@ export default function FoodChainFrenzyGame() {
   const [dragged, setDragged] = useState(null);
   const conveyorRef = useRef();
 
+  // --- Mini Fire Mode State ---
+  // When active, doubles speed/multiplier and adds effects.
+  const [fireModeActive, setFireModeActive] = useState(false);
+  const [fireModeTimeLeft, setFireModeTimeLeft] = useState(0); // ms left
+  const fireModeTimerId = useRef(null);
+  const fireModeSoundRef = useRef(null);
+
   // --- Pop-up Recipe Card Guidance State ---
   // Show each unique recipe in first few rounds as pop-up when needed
   // Store (by recipe name) which popups have been seen
@@ -105,29 +115,59 @@ export default function FoodChainFrenzyGame() {
     return null;
   };
 
+  // --- Mini Fire Mode Timer Effect ---
+  // Decrease fireModeTimeLeft every second and auto-disable at end
+  useEffect(() => {
+    if (!fireModeActive) return;
+    if (fireModeTimeLeft <= 0) {
+      setFireModeActive(false);
+      setFireModeTimeLeft(0);
+      return;
+    }
+    fireModeTimerId.current = setTimeout(() => {
+      setFireModeTimeLeft(ms => ms - 1000);
+    }, 1000);
+    return () => {
+      clearTimeout(fireModeTimerId.current);
+    };
+  }, [fireModeActive, fireModeTimeLeft]);
+
+  // Clear fire mode timer & sound on unmount/game over
+  useEffect(() => {
+    return () => {
+      if (fireModeTimerId.current) clearTimeout(fireModeTimerId.current);
+      if (fireModeSoundRef.current) {
+        fireModeSoundRef.current.pause();
+        fireModeSoundRef.current.currentTime = 0;
+      }
+    };
+  }, []);
+
   /** Periodically animate conveyor, add new ingredient */
   useEffect(() => {
     if (gameOver) return;
+    const speed = fireModeActive ? 2 : 1; // Double speed in fire mode!
     const interval = setInterval(() => {
       setConveyor(prev => {
         // Advance position, remove if offscreen
         const advanced = prev.map(item => ({
           ...item,
-          x: item.x + 2
+          x: item.x + 2 * speed
         })).filter(item => item.x < CONVEYOR_WIDTH);
         // Add new ingredient at left randomly
-        if (Math.random() < 0.3 || advanced.length === 0) {
+        if (Math.random() < (fireModeActive ? 0.5 : 0.3) || advanced.length === 0) {
           advanced.push({ ...getRandomIngredient(), x: -30, id: Math.random() });
         }
         return advanced;
       });
     }, 22);
     return () => clearInterval(interval);
-  }, [gameOver]);
+  }, [gameOver, fireModeActive]);
 
   /** Spawn and timeout orders */
   useEffect(() => {
     if (gameOver) return;
+    const spawnInterval = fireModeActive ? 420 : 700; // orders come nearly twice as fast
     const interval = setInterval(() => {
       setOrders(prev => {
         // Remove expired orders, penalize if missed
@@ -146,9 +186,9 @@ export default function FoodChainFrenzyGame() {
       });
       // Advance round number if new unique recipe is encountered
       setRoundNumber((prev) => prev + 1);
-    }, 700);
+    }, spawnInterval);
     return () => clearInterval(interval);
-  }, [gameOver]);
+  }, [gameOver, fireModeActive]);
 
   /** End game if rage > 4 */
   useEffect(() => {
@@ -208,17 +248,42 @@ export default function FoodChainFrenzyGame() {
       const left = Math.max(0, curOrder.duration - elapsed);
       const base = 100;
       const tip = Math.floor(left / 1200);
+      const fireMultiplier = fireModeActive ? 2 : 1;
       const comboBonus = combo > 1 ? combo * 8 : 0;
-      setScore(s => s + base + tip + comboBonus);
-      setCombo(c => c + 1);
+      setScore(s => s + (base + tip + comboBonus) * fireMultiplier);
+      // check for fire mode eligibility
+      setCombo(c => {
+        const newCombo = c + 1;
+        // If combo threshold just reached, activate fire mode!
+        if (!fireModeActive && newCombo >= 5) {
+          setFireModeActive(true);
+          setFireModeTimeLeft(15000); // 15s
+          // Play fire mode sound
+          setTimeout(() => {
+            if (fireModeSoundRef.current) {
+              fireModeSoundRef.current.currentTime = 0;
+              fireModeSoundRef.current.volume = 0.33;
+              fireModeSoundRef.current.play().catch(() => {});
+            }
+          }, 650); // Delay for pop
+        }
+        return newCombo;
+      });
       setOrders(orders => orders.slice(1)); // pop this order
       setPlate([]);
       // Mark that the player has now seen this recipe (if popup shown, handled there)
       setRecipeGuideSeen(seen => ({ ...seen, [curOrder.name]: true }));
     } else {
-      // Failed: rage, reset combo
+      // Failed: rage, reset combo, cancel fire mode
       setRage(r => r + 1);
       setCombo(0);
+      setFireModeActive(false);
+      setFireModeTimeLeft(0);
+      // Stop fire sound
+      if (fireModeSoundRef.current) {
+        fireModeSoundRef.current.pause();
+        fireModeSoundRef.current.currentTime = 0;
+      }
       setPlate([]); // Drop your mess!
     }
   }
@@ -440,19 +505,62 @@ export default function FoodChainFrenzyGame() {
         visible={showRecipePopup}
         onDismiss={handleDismissRecipePopup}
       />
+      {/* Fire sound effect element (hidden) */}
+      <audio
+        ref={fireModeSoundRef}
+        src="https://cdn.pixabay.com/audio/2022/10/16/audio_12da2e5ee1.mp3"
+        preload="auto"
+        style={{ display: "none" }}
+      />
       <div style={{
         margin: "auto",
         marginTop: 42,
         marginBottom: 10,
         maxWidth: 480,
-        background: "#ffe7e7",
+        background: fireModeActive
+          ? "linear-gradient(100deg, #fd91a1 73%, #ffd772 100%)"
+          : "#ffe7e7",
         borderRadius: 22,
-        boxShadow: "0 8px 30px #fd91a111",
+        boxShadow: fireModeActive
+          ? "0 8px 54px 1.5px #fdad4187, 0 0 77px #fd915b66"
+          : "0 8px 30px #fd91a111",
         padding: "16px 16px 40px 16px",
-        border: "4px solid #fd91a1",
+        border: fireModeActive
+          ? "4px solid gold"
+          : "4px solid #fd91a1",
         minHeight: 460,
-        position: "relative"
+        position: "relative",
+        filter: fireModeActive
+          ? "brightness(1.09) saturate(1.25) drop-shadow(0 0 6px gold)"
+          : undefined,
+        transition: "all 0.6s cubic-bezier(.62,.01,.53,1.1)"
       }}>
+        {/* FIRE MODE Banner */}
+        {fireModeActive && (
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "-50px",
+              transform: "translateX(-50%)",
+              fontWeight: "bold",
+              fontFamily: "'Luckiest Guy', Impact, Arial",
+              fontSize: "1.9em",
+              letterSpacing: "3px",
+              color: "#fff",
+              textShadow: "0 0 18px #ff7306, 0 2px 2px #a64906, 0 0 2px #f4d34d, 0 4px 14px #fdab0095",
+              background: "linear-gradient(170deg,#fa9d45 60%, #fd91a1 90%)",
+              border: "3.5px solid gold",
+              borderRadius: "22px",
+              padding: "14px 36px 10px 32px",
+              boxShadow: "0 12px 33px 3px #ffb42238, 0 3px 6px #f68b2377",
+              zIndex: 1200,
+              animation: "combo-pop 1.4s"
+            }}
+          >
+            🔥 MINI FIRE MODE! x2 SCORE ⚡ ({Math.ceil(fireModeTimeLeft / 1000)}s)
+          </div>
+        )}
         <div style={{
           fontFamily: "Comic Sans MS, Quicksand, Arial",
           fontWeight: "bold",
@@ -478,11 +586,22 @@ export default function FoodChainFrenzyGame() {
             marginBottom: 10,
             fontSize: "1.24em",
             fontWeight: "bold",
-            background: "#921635"
+            background: fireModeActive ? "gold" : "#921635",
+            color: fireModeActive ? "#a21b1b" : "#fff",
+            boxShadow: fireModeActive
+              ? "0 0 16px 2px #fdab01bb"
+              : undefined,
+            border: fireModeActive
+              ? "2.2px solid orange"
+              : undefined,
+            filter: fireModeActive
+              ? "drop-shadow(0 0 6px orange)"
+              : undefined,
+            transition: "all 0.2s"
           }}
           onClick={handleServe}
           disabled={gameOver || plate.length === 0}
-        >Serve!</button>
+        >{fireModeActive ? "🔥 SUPER SERVE! 🔥" : "Serve!"}</button>
 
         {/* Game Over */}
         {gameOver &&
